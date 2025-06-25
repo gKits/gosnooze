@@ -17,3 +17,6 @@
 ### Bill of Materials
 
 ### Assembly
+
+---
+<p align="center">Logo created with <a href=https://github.com/quasilyte/gopherkon)>gopherkon</a></p>
