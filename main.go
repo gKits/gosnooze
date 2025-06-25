@@ -28,7 +28,7 @@ func main() {
 		return
 	}
 
-	// TODO: Create custom characters using https://maxpromer.github.io/LCD-Character-Creator/
+	// TODO: Create custom characters using https://maxpromer.github.io/LCD-Character-Creator
 	lcd := hd44780i2c.New(machine.I2C1, 0x27)
 	if err := lcd.Configure(hd44780i2c.Config{Width: 16, Height: 2}); err != nil {
 		println("failed to configure lcd: ", err.Error())
