@@ -1,66 +1,60 @@
 package main
 
 import (
-	"fmt"
 	"machine"
 	"time"
 
-	"tinygo.org/x/drivers/ds3231"
+	"github.com/gkits/gosnooze/internal/devices"
 	"tinygo.org/x/drivers/hd44780i2c"
 )
 
 func main() {
 	machine.LED.Low()
 	machine.I2C0.Configure(machine.I2CConfig{})
-	machine.I2C1.Configure(machine.I2CConfig{})
+	machine.I2C1.Configure(machine.I2CConfig{SCL: machine.GPIO16, SDA: machine.GPIO17})
 
-	rtc := ds3231.New(machine.I2C0)
-	if ok := rtc.Configure(); !ok {
-		println("failed to configure rtc")
-		return
-	}
-	if err := rtc.SetRunning(true); err != nil {
-		println("failed to start rtc:", err.Error())
-		return
-	}
-	if err := rtc.SetTime(time.Date(2025, time.June, 25, 21, 32, 0, 0, time.UTC)); err != nil {
-		println("failed to set rtc time:", err.Error())
+	button := machine.GPIO14
+	button.Configure(machine.PinConfig{Mode: machine.PinInputPullup})
+
+	lcd, err := devices.SetupLCD(machine.I2C0)
+	if err != nil {
+		println("failed to setup lcd device:", err.Error())
 		return
 	}
 
-	// TODO: Create custom characters using https://maxpromer.github.io/LCD-Character-Creator
-	lcd := hd44780i2c.New(machine.I2C1, 0x27)
-	if err := lcd.Configure(hd44780i2c.Config{Width: 16, Height: 2}); err != nil {
-		println("failed to configure lcd: ", err.Error())
+	clock, err := devices.SetupRTC(machine.I2C1, time.Date(2001, time.May, 15, 9, 0, 0, 0, time.UTC))
+	if err != nil {
+		println("failed to setup clock device:", err.Error())
 		return
 	}
-	lcd.ClearDisplay()
-	lcd.SetCursor(0, 0)
 
-	tick := time.NewTicker(time.Second)
-	defer tick.Stop()
-	for range tick.C {
-		now, err := rtc.ReadTime()
+	backlightOn := true
+
+	for {
+		if !button.Get() {
+			backlightOn = !backlightOn
+			lcd.BacklightOn(backlightOn)
+		}
+
+		now, err := clock.ReadTime()
 		if err != nil {
-			fmt.Println(err)
 			println("failed to read time:", err.Error())
 			continue
 		}
 
-		temp, err := rtc.ReadTemperature()
+		temp, err := clock.ReadTemperature()
 		if err != nil {
 			println("failed to read temperature:", err.Error())
 			continue
 		}
 		println("now:", now.String(), "|", "temp:", temp/1000, "°C")
-		lcdPrintTime(&lcd, now)
+		lcdPrintTime(lcd, now)
 	}
 }
 
 func lcdPrintTime(lcd *hd44780i2c.Device, t time.Time) {
 	lcd.SetCursor(0, 0)
-	lcd.Print([]byte(t.Format("03:04:05")))
-	lcd.SetCursor(1, 0)
-	lcd.Print([]byte(t.Format("02 Jan 2006")))
-	lcd.SetCursor(0, 0)
+	lcd.Print([]byte(t.Format(time.TimeOnly)))
+	lcd.SetCursor(0, 1)
+	lcd.Print([]byte(t.Format(time.DateOnly)))
 }
