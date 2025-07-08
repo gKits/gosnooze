@@ -10,10 +10,10 @@ import (
 
 func main() {
 	machine.LED.Low()
-	machine.I2C0.Configure(machine.I2CConfig{})
-	machine.I2C1.Configure(machine.I2CConfig{SCL: machine.GPIO16, SDA: machine.GPIO17})
+	machine.I2C0.Configure(machine.I2CConfig{SCL: machine.GPIO27, SDA: machine.GPIO26})
+	machine.I2C1.Configure(machine.I2CConfig{SCL: machine.GPIO21, SDA: machine.GPIO20})
 
-	button := machine.GPIO14
+	button := machine.GPIO4
 	button.Configure(machine.PinConfig{Mode: machine.PinInputPullup})
 
 	lcd, err := devices.SetupLCD(machine.I2C0)
@@ -48,7 +48,7 @@ func main() {
 			continue
 		}
 		println("now:", now.String(), "|", "temp:", temp/1000, "°C")
-		lcdPrintTime(lcd, now)
+		lcdPrintTime(&lcd, now)
 	}
 }
 
