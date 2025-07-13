@@ -1,6 +1,4 @@
-[//]: # "TODO: Create documentation"
-
-<br />
+<!-- "TODO: Create documentation" -->
 
 <div align="center">
   <a href="https://github.com/gkits/gosnooze">
