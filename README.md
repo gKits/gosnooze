@@ -28,32 +28,32 @@
 ### Flashing
 
 1. Clone this repo and move into the directory.
-```sh
-git clone https://github.com/gkits/gosnooze
-cd gosnooze
-```
+   ```sh
+   git clone https://github.com/gkits/gosnooze
+   cd gosnooze
+   ```
 
 2. Start the Pico W in boot selection mode by holding down the `BOOTSEL` button while connecting it
-to your computer via USB.
+   to your computer via USB.
 
 3. Mount the Pico W to your filesystem.
     1. Find the correct block device by running `lsblk`. The correct device should look like
-    something like this:
-    ```
-    sdx           x:xx   1  128M  0 disk
-    └─sdx1        x:xx   1  128M  0 part
-    ```
+       something like this:
+       ```
+       sdx           x:xx   1  128M  0 disk
+       └─sdx1        x:xx   1  128M  0 part
+       ```
 
     2. Mount the device to your filesystem:
-    ```sh
-    mkdir /mnt/RPI-RP2
-    mount /dev/sdx1 /mnt/RPI-RP2
-    ```
+       ```sh
+       mkdir /mnt/RPI-RP2
+       mount /dev/sdx1 /mnt/RPI-RP2
+       ```
 
 4. Flash the device:
-```sh
-tinygo flash -target=pico-w
-```
+   ```sh
+   tinygo flash -target=pico-w
+   ```
 
 The device should now reboot and after some time the display should show the time.
 
