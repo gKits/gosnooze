@@ -1,49 +1,54 @@
 package main
 
 import (
-	"fmt"
 	"machine"
 	"time"
 
 	"github.com/gkits/gosnooze/internal/devices"
+	"github.com/gkits/gosnooze/internal/log"
+	"github.com/gkits/gosnooze/internal/runtime"
+)
+
+const (
+	tickrate = 50 * time.Millisecond
+
+	displaySCLPin = machine.GPIO21
+	displaySDAPin = machine.GPIO21
+
+	clockSCLPin = machine.GPIO19
+	clockSDAPin = machine.GPIO18
+
+	button0Pin = machine.GPIO4
+	button1Pin = machine.GPIO5
+	button2Pin = machine.GPIO6
 )
 
 func main() {
 	machine.LED.Low()
-	machine.I2C0.Configure(machine.I2CConfig{SCL: machine.GPIO21, SDA: machine.GPIO20})
-	machine.I2C1.Configure(machine.I2CConfig{SCL: machine.GPIO19, SDA: machine.GPIO18})
+	machine.I2C0.Configure(machine.I2CConfig{SCL: displaySCLPin, SDA: displaySDAPin})
+	machine.I2C1.Configure(machine.I2CConfig{SCL: clockSCLPin, SDA: clockSDAPin})
 
-	button := machine.GPIO4
-	button.Configure(machine.PinConfig{Mode: machine.PinInputPullup})
+	var buttons [3]devices.Button
+	buttons[0] = devices.NewButton(button0Pin)
+	buttons[1] = devices.NewButton(button1Pin)
+	buttons[2] = devices.NewButton(button2Pin)
 
-	lcd, err := devices.SetupLCD(machine.I2C0)
+	lcd, err := devices.NewDisplay(machine.I2C0)
 	if err != nil {
-		println("failed to setup lcd device:", err.Error())
-		return
+		println("failed to setup display device:", err.Error())
 	}
-	interrupt := machine.GPIO5
-	interrupt.Configure(machine.PinConfig{Mode: machine.PinInputPullup})
 
-	clock, err := devices.SetupRTC(machine.I2C1, time.Date(2001, time.May, 15, 9, 0, 0, 0, time.UTC))
+	clock, err := devices.NewClock(machine.I2C1)
 	if err != nil {
 		println("failed to setup clock device:", err.Error())
-		return
 	}
 
-	for {
-		now, err := clock.ReadTime()
-		if err != nil {
-			println("failed to read time:", err.Error())
-			continue
-		}
+	rt := runtime.New(lcd, clock, buttons)
 
-		temp, err := clock.ReadTemperature()
-		if err != nil {
-			println("failed to read temperature:", err.Error())
-			continue
+	tick := time.NewTicker(tickrate)
+	for t := range tick.C {
+		if err := rt.Tick(); err != nil {
+			log.Error(t, err.Error())
 		}
-
-		fmt.Printf("now: %s | temp: %.2f °C | control: %b%b\n", now.String(), float32(temp)/1000.)
-		lcd.PrintTime(now)
 	}
 }

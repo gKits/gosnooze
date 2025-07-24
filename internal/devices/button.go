@@ -2,8 +2,16 @@ package devices
 
 import "machine"
 
-func SetupButton(pin machine.Pin) machine.Pin {
+type Button struct {
+	machine.Pin
+}
+
+func NewButton(pin machine.Pin) Button {
 	button := machine.GPIO14
 	button.Configure(machine.PinConfig{Mode: machine.PinInputPullup})
-	return button
+	return Button{button}
+}
+
+func (b Button) IsPressed() bool {
+	return b.Pin.Get()
 }
