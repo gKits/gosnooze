@@ -8,9 +8,10 @@ import (
 )
 
 type Runtime struct {
-	disp    devices.Display
-	clock   devices.Clock
-	buttons [3]devices.Button
+	disp     devices.Display
+	clock    devices.Clock
+	buttons  [3]devices.Button
+	buttonCh chan int
 
 	mode Mode
 
@@ -22,9 +23,10 @@ type Runtime struct {
 
 func New(disp devices.Display, clock devices.Clock, buttons [3]devices.Button) *Runtime {
 	return &Runtime{
-		disp:    disp,
-		clock:   clock,
-		buttons: buttons,
+		disp:     disp,
+		clock:    clock,
+		buttons:  buttons,
+		buttonCh: make(chan int, 5),
 	}
 }
 
@@ -46,8 +48,25 @@ func (run *Runtime) Tick() error {
 	return nil
 }
 
-func (run *Runtime) ConsumeButtonEvents() {
-	// TODO: Implement consumer logic.
+func (run *Runtime) scanButtonEvents() {
+	if run.buttons[0].IsPressed() {
+		run.buttonCh <- 0
+	}
+	if run.buttons[1].IsPressed() {
+		run.buttonCh <- 1
+	}
+	if run.buttons[2].IsPressed() {
+		run.buttonCh <- 2
+	}
+}
+
+func (run *Runtime) consumeButtonEvents() int {
+	select {
+	case but := <-run.buttonCh:
+		return but
+	default:
+		return -1
+	}
 }
 
 func (run *Runtime) showTime() error {
