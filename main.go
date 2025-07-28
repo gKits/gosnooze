@@ -18,9 +18,9 @@ const (
 	clockSCLPin = machine.GPIO19
 	clockSDAPin = machine.GPIO18
 
-	button0Pin = machine.GPIO4
-	button1Pin = machine.GPIO5
-	button2Pin = machine.GPIO6
+	buttonAPin = machine.GPIO4
+	buttonBPin = machine.GPIO5
+	buttonCPin = machine.GPIO6
 )
 
 func main() {
@@ -29,9 +29,9 @@ func main() {
 	machine.I2C1.Configure(machine.I2CConfig{SCL: clockSCLPin, SDA: clockSDAPin})
 
 	var buttons [3]devices.Button
-	buttons[0] = devices.NewButton(button0Pin)
-	buttons[1] = devices.NewButton(button1Pin)
-	buttons[2] = devices.NewButton(button2Pin)
+	buttons[0] = devices.NewButton(buttonAPin)
+	buttons[1] = devices.NewButton(buttonBPin)
+	buttons[2] = devices.NewButton(buttonCPin)
 
 	lcd, err := devices.NewDisplay(machine.I2C0)
 	if err != nil {
