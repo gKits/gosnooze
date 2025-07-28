@@ -17,8 +17,8 @@ type Runtime struct {
 
 	mode Mode
 
-	setTimeBuf time.Time
-	setTimeCur TimePosition
+	timeBuf time.Time
+	timeCur TimePosition
 
 	backlightTicksOn uint
 }
@@ -41,11 +41,15 @@ func (run *Runtime) Tick() error {
 			run.disp.BacklightOn(false)
 		}
 	case EventAlarmFiring:
+		run.mode = ModeShowTime
+		run.resetBuffer()
 		// TODO: Play alarm sound.
 	default:
 		run.disp.BacklightOn(true)
 		run.backlightTicksOn = 40
 	}
+
+	// TODO: Add logic to differentiate button presses from holds.
 
 	switch run.mode {
 	case ModeSetTime:
@@ -86,8 +90,8 @@ func (run *Runtime) showTime(e Event) error {
 }
 
 func (run *Runtime) setTime(e Event) (err error) {
-	if run.setTimeBuf.IsZero() {
-		run.setTimeBuf, err = run.clock.ReadTime()
+	if run.timeBuf.IsZero() {
+		run.timeBuf, err = run.clock.ReadTime()
 		if err != nil {
 			return fmt.Errorf("failed to read time: %w", err)
 		}
@@ -95,15 +99,15 @@ func (run *Runtime) setTime(e Event) (err error) {
 
 	switch e {
 	case EventButtonAPressed:
-		run.setTimeBuf = modifyTimePosition(run.setTimeBuf, run.setTimeCur, -1)
+		run.timeBuf = modifyTimePosition(run.timeBuf, run.timeCur, -1)
 	case EventButtonCPressed:
-		run.setTimeBuf = modifyTimePosition(run.setTimeBuf, run.setTimeCur, 1)
+		run.timeBuf = modifyTimePosition(run.timeBuf, run.timeCur, 1)
 	case EventButtonBPressed:
-		run.setTimeCur++
-		if run.setTimeCur == TimeCursorOutOfBounds {
-			run.setTimeCur = 0
-			run.clock.SetTime(run.setTimeBuf)
-			run.setTimeBuf = time.Time{}
+		run.timeCur++
+		if run.timeCur == TimeCursorOutOfBounds {
+			run.timeCur = 0
+			run.clock.SetTime(run.timeBuf)
+			run.timeBuf = time.Time{}
 			return modeFinished
 		}
 	}
@@ -131,9 +135,9 @@ func (run *Runtime) getCurrentEvent() Event {
 	}
 }
 
-func (run *Runtime) reset() {
-	run.setTimeCur = 0
-	run.setTimeBuf = time.Time{}
+func (run *Runtime) resetBuffer() {
+	run.timeCur = 0
+	run.timeBuf = time.Time{}
 }
 
 func modifyTimePosition(dt time.Time, cur TimePosition, mod int) time.Time {
