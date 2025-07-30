@@ -29,12 +29,16 @@ func NewDisplay(i2cbus drivers.I2C) (Display, error) {
 Prints dt to the LCD screen like this:
 
 	+----------------+
-	|    03:04:05    |
+	|    15:04:05    |
 	| Mo Jan 02 2006 |
 	+----------------+
 */
-func (lcd Display) PrintTime(dt time.Time) {
-	t := dt.Format("03:04:05")
+func (lcd Display) PrintTime(dt time.Time, h12 bool) {
+	tFmt := "15:04:05"
+	if h12 {
+		tFmt = "03:04:05PM"
+	}
+	t := dt.Format(tFmt)
 	d := dt.Format("Mon")[:2] + dt.Format(" Jan 02 2006")
 	lcd.SetCursor(4, 0)
 	lcd.Print([]byte(t))
