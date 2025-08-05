@@ -51,7 +51,7 @@ func (run *Runtime) tick() error {
 		} else {
 			run.disp.BacklightOn(false)
 		}
-	case EventAlarmFiring:
+	case EventAlarmFire:
 		run.mode = ModeShowTime
 		run.resetBuffer()
 		// TODO: Play alarm sound.
@@ -64,18 +64,24 @@ func (run *Runtime) tick() error {
 
 	switch run.mode {
 	case ModeSetTime:
-		if err := run.setTime(e); err != nil {
-			run.mode = ModeShowTime
-			return err
-		}
-	case ModeSetAlarm:
+		err = run.setTime(e)
+	case ModeSetAlarm1:
+	case ModeSetAlarm2:
 	case ModeShowTime:
 		fallthrough
 	default:
-		if err := run.showTime(e); err != nil {
-			return err
-		}
+		err = run.showTime(e)
 	}
+
+	if errors.Is(err, modeFinished) {
+		run.mode = ModeShowTime
+		return nil
+	}
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -84,18 +90,24 @@ func (run *Runtime) showTime(e Event) error {
 	if err != nil {
 		return fmt.Errorf("failed to read time: %w", err)
 	}
-	run.disp.PrintTime(now)
+	run.disp.PrintTime(now, false)
 
 	switch e {
-	case EventButtonAPressed:
+	case EventButtonAPress:
 		if err := run.clock.EnableAlarm1(); err != nil {
 			return err
 		}
-	case EventButtonBPressed:
-	case EventButtonCPressed:
+	case EventButtonBPress:
+	case EventButtonCPress:
 		if err := run.clock.EnableAlarm2(); err != nil {
 			return err
 		}
+	case EventButtonAHold:
+		run.mode = ModeSetAlarm1
+	case EventButtonBHold:
+		run.mode = ModeSetTime
+	case EventButtonCHold:
+		run.mode = ModeSetAlarm2
 	}
 	return nil
 }
@@ -109,11 +121,11 @@ func (run *Runtime) setTime(e Event) (err error) {
 	}
 
 	switch e {
-	case EventButtonAPressed:
+	case EventButtonAPress:
 		run.timeBuf = modifyTimePosition(run.timeBuf, run.timeCur, -1)
-	case EventButtonCPressed:
+	case EventButtonCPress:
 		run.timeBuf = modifyTimePosition(run.timeBuf, run.timeCur, 1)
-	case EventButtonBPressed:
+	case EventButtonBPress:
 		run.timeCur++
 		if run.timeCur == TimeCursorOutOfBounds {
 			run.timeCur = 0
@@ -134,13 +146,13 @@ func (run *Runtime) setAlarm() error {
 func (run *Runtime) getCurrentEvent() Event {
 	switch {
 	case run.clock.IsAlarm1Fired(), run.clock.IsAlarm2Fired():
-		return EventAlarmFiring
+		return EventAlarmFire
 	case run.buttons[0].IsPressed():
-		return EventButtonAPressed
+		return EventButtonAPress
 	case run.buttons[1].IsPressed():
-		return EventButtonBPressed
+		return EventButtonBPress
 	case run.buttons[2].IsPressed():
-		return EventButtonCPressed
+		return EventButtonCPress
 	default:
 		return EventNone
 	}

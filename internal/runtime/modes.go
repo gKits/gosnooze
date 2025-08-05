@@ -5,17 +5,21 @@ type Mode uint8
 const (
 	ModeShowTime Mode = iota
 	ModeSetTime
-	ModeSetAlarm
+	ModeSetAlarm1
+	ModeSetAlarm2
 )
 
 type Event uint8
 
 const (
 	EventNone Event = iota
-	EventButtonAPressed
-	EventButtonBPressed
-	EventButtonCPressed
-	EventAlarmFiring
+	EventButtonAPress
+	EventButtonBPress
+	EventButtonCPress
+	EventButtonAHold
+	EventButtonBHold
+	EventButtonCHold
+	EventAlarmFire
 )
 
 type TimePosition uint8
