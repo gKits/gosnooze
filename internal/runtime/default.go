@@ -21,17 +21,28 @@ type Runtime struct {
 	timeCur TimePosition
 
 	backlightTicksOn uint
+
+	ticker *time.Ticker
 }
 
-func New(disp devices.Display, clock devices.Clock, buttons [3]devices.Button) *Runtime {
+func New(interval time.Duration, disp devices.Display, clock devices.Clock, buttons [3]devices.Button) *Runtime {
 	return &Runtime{
 		disp:    disp,
 		clock:   clock,
 		buttons: buttons,
+		ticker:  time.NewTicker(interval * time.Second),
 	}
 }
 
-func (run *Runtime) Tick() error {
+func (run *Runtime) Run() {
+	for range run.ticker.C {
+		if err := run.tick(); err != nil {
+
+		}
+	}
+}
+
+func (run *Runtime) tick() error {
 	e := run.getCurrentEvent()
 	switch e {
 	case EventNone:

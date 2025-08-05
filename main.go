@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gkits/gosnooze/internal/devices"
-	"github.com/gkits/gosnooze/internal/log"
 	"github.com/gkits/gosnooze/internal/runtime"
 )
 
@@ -43,12 +42,6 @@ func main() {
 		println("failed to setup clock device:", err.Error())
 	}
 
-	rt := runtime.New(lcd, clock, buttons)
-
-	tick := time.NewTicker(tickrate)
-	for t := range tick.C {
-		if err := rt.Tick(); err != nil {
-			log.Error(t, err.Error())
-		}
-	}
+	rt := runtime.New(1, lcd, clock, buttons)
+	rt.Run()
 }
