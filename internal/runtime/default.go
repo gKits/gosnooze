@@ -42,7 +42,7 @@ func (run *Runtime) Run() {
 	}
 }
 
-func (run *Runtime) tick() error {
+func (run *Runtime) tick() (err error) {
 	e := run.getCurrentEvent()
 	switch e {
 	case EventNone:
