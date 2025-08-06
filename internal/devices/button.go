@@ -13,5 +13,5 @@ func NewButton(pin machine.Pin) Button {
 }
 
 func (b Button) IsPressed() bool {
-	return b.Pin.Get()
+	return !b.Pin.Get()
 }
