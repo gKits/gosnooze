@@ -17,9 +17,11 @@ const (
 	clockSCLPin = machine.GPIO19
 	clockSDAPin = machine.GPIO18
 
-	buttonAPin = machine.GPIO4
-	buttonBPin = machine.GPIO5
-	buttonCPin = machine.GPIO6
+	buzzerPin = machine.GPIO10
+
+	buttonAPin = machine.GPIO11
+	buttonBPin = machine.GPIO12
+	buttonCPin = machine.GPIO13
 )
 
 func main() {
@@ -31,6 +33,8 @@ func main() {
 	buttons[0] = devices.NewButton(buttonAPin)
 	buttons[1] = devices.NewButton(buttonBPin)
 	buttons[2] = devices.NewButton(buttonCPin)
+
+	buzzer := devices.NewBuzzer(buzzerPin)
 
 	lcd, err := devices.NewDisplay(machine.I2C0)
 	if err != nil {

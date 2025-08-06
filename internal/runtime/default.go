@@ -13,6 +13,7 @@ var modeFinished = errors.New("mode is finished")
 type Runtime struct {
 	disp    devices.Display
 	clock   devices.Clock
+	buzzer  devices.Buzzer
 	buttons [3]devices.Button
 
 	mode Mode
@@ -25,11 +26,18 @@ type Runtime struct {
 	ticker *time.Ticker
 }
 
-func New(interval time.Duration, disp devices.Display, clock devices.Clock, buttons [3]devices.Button) *Runtime {
+func New(
+	interval time.Duration,
+	disp devices.Display,
+	clock devices.Clock,
+	buzzer devices.Buzzer,
+	buttons [3]devices.Button,
+) *Runtime {
 	return &Runtime{
 		disp:    disp,
 		clock:   clock,
 		buttons: buttons,
+		buzzer:  buzzer,
 		ticker:  time.NewTicker(interval * time.Second),
 	}
 }
