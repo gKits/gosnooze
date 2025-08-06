@@ -43,9 +43,10 @@ func New(
 }
 
 func (run *Runtime) Run() {
-	for range run.ticker.C {
+	for t := range run.ticker.C {
+		println(t.Unix(), "[INF]", "mode:", run.mode)
 		if err := run.tick(); err != nil {
-
+			println(t.Unix(), "[ERR]", "tick encountered error", "err", err.Error())
 		}
 	}
 }
