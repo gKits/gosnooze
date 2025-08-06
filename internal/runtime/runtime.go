@@ -44,14 +44,13 @@ func New(
 
 func (run *Runtime) Run() {
 	for t := range run.ticker.C {
-		println(t.Unix(), "[INF]", "mode:", run.mode)
-		if err := run.tick(); err != nil {
+		if err := run.tick(t); err != nil {
 			println(t.Unix(), "[ERR]", "tick encountered error", "err", err.Error())
 		}
 	}
 }
 
-func (run *Runtime) tick() (err error) {
+func (run *Runtime) tick(t time.Time) (err error) {
 	e := run.getCurrentEvent()
 	switch e {
 	case EventNone:
@@ -69,7 +68,7 @@ func (run *Runtime) tick() (err error) {
 		run.backlightTicksOn = 40
 	}
 
-	// TODO: Add logic to differentiate button presses from holds.
+	println(t.Unix(), "[INF]", "mode:", run.mode.String(), "event:", e.String())
 
 	switch run.mode {
 	case ModeSetTime:
@@ -153,6 +152,7 @@ func (run *Runtime) setAlarm() error {
 }
 
 func (run *Runtime) getCurrentEvent() Event {
+	// TODO: Add logic to differentiate button presses from holds.
 	switch {
 	case run.clock.IsAlarm1Fired(), run.clock.IsAlarm2Fired():
 		return EventAlarmFire
