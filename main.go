@@ -46,6 +46,6 @@ func main() {
 		println("failed to setup clock device:", err.Error())
 	}
 
-	rt := runtime.New(1, lcd, clock, buttons)
+	rt := runtime.New(1, lcd, clock, buzzer, buttons)
 	rt.Run()
 }
